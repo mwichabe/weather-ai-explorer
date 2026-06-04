@@ -169,13 +169,16 @@ export function weatherCacheKey(lat: number, lon: number): string {
   return `weather:${lat.toFixed(2)},${lon.toFixed(2)}`;
 }
 
-export async function fetchWeather(lat: number, lon: number, signal?: AbortSignal): Promise<WeatherBundle> {
+export async function fetchWeather(
+  lat: number,
+  lon: number,
+  signal?: AbortSignal,
+): Promise<WeatherBundle> {
   if (!hasApiKey) {
-    await sleep(450); // simulate latency so loading states are demonstrable
+    await sleep(450);
     return { ...buildMockBundle(lat, lon), demo: true };
   }
 
-  // Try progressively simpler param sets in case the server has a bug with certain params.
   const paramSets: Record<string, string>[] = [
     { lat: String(lat), lon: String(lon), units: 'metric' },
     { lat: String(lat), lon: String(lon) },
@@ -202,7 +205,7 @@ export async function fetchWeather(lat: number, lon: number, signal?: AbortSigna
             await sleep(2 ** attempt * 400);
             continue;
           }
-          break; // try the next param set for server errors
+          break;
         }
 
         const bundle = normalizeWeather((await res.json()) as Raw);
@@ -219,11 +222,9 @@ export async function fetchWeather(lat: number, lon: number, signal?: AbortSigna
       }
     }
 
-    // Don't try a simpler param set for non-server errors (auth, quota, etc.)
     if (lastStatus > 0 && lastStatus < 500) break;
   }
 
-  // Network/server failure → serve last good data (stale) or demo data rather than a dead screen.
   const stale = cacheGet<WeatherBundle>(key);
   if (stale) return stale.data;
   return { ...buildMockBundle(lat, lon), demo: true };

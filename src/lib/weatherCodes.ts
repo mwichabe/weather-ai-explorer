@@ -1,9 +1,3 @@
-/**
- * Weather condition presentation map.
- * Primary key: WMO weather codes (0–99). Fallback: fuzzy match on description text,
- * so the UI stays correct even if the API returns only a condition string.
- */
-
 export interface ConditionVisual {
   emoji: string;
   nightEmoji?: string;

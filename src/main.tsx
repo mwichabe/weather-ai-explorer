@@ -5,12 +5,6 @@ import App from './App';
 import { SettingsProvider } from './context/SettingsContext';
 import './index.css';
 
-/**
- * Single QueryClient for the app.
- * Defaults here are deliberately conservative — the weather hook overrides
- * staleTime/gcTime per query; window-focus refetch is enabled so returning to the
- * tab silently revalidates (background update, never a loading flash).
- */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
