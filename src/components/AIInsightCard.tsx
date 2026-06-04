@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, RefreshCw, Brain, AlertCircle } from 'lucide-react';
 import { fetchGeminiInsight, hasGeminiKey } from '../lib/gemini';
+import type { GeminiError } from '../lib/gemini';
 import type { CurrentConditions, ForecastDay } from '../lib/types';
 
 type Phase = 'idle' | 'loading' | 'done' | 'error';
@@ -24,6 +25,7 @@ export function AIInsightCard({ current, daily, locationName }: Props) {
   const [fullText, setFullText] = useState('');
   const [displayed, setDisplayed] = useState('');
   const [stepIdx, setStepIdx] = useState(0);
+  const [errorKind, setErrorKind] = useState<GeminiError>('network');
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -51,10 +53,11 @@ export function AIInsightCard({ current, daily, locationName }: Props) {
     setStepIdx(0);
     const result = await fetchGeminiInsight(locationName, current, daily, ctrl.signal);
     if (ctrl.signal.aborted) return;
-    if (result) {
-      setFullText(result);
+    if (result.ok) {
+      setFullText(result.text);
       setPhase('done');
     } else {
+      setErrorKind(result.error);
       setPhase('error');
     }
   };
@@ -110,7 +113,7 @@ export function AIInsightCard({ current, daily, locationName }: Props) {
         {phase === 'idle'    && <IdleState    onGenerate={generate} />}
         {phase === 'loading' && <LoadingState step={STEPS[stepIdx]} />}
         {phase === 'done'    && <DoneState    text={displayed} complete={displayed.length >= fullText.length} />}
-        {phase === 'error'   && <ErrorState   onRetry={generate} />}
+        {phase === 'error'   && <ErrorState   onRetry={generate} kind={errorKind} />}
       </div>
 
       {/* ── Footer ── */}
@@ -221,21 +224,31 @@ function DoneState({ text, complete }: { text: string; complete: boolean }) {
 
 /* ─────────────── Error ─────────────── */
 
-function ErrorState({ onRetry }: { onRetry: () => void }) {
+const ERROR_MESSAGES: Record<GeminiError, { title: string; detail: string; retryable: boolean }> = {
+  quota:   { title: 'Daily limit reached',      detail: 'You have used today\'s AI quota. Try again tomorrow.',      retryable: false },
+  key:     { title: 'API key invalid',           detail: 'Check that VITE_GEMINI_API_KEY is set correctly.',          retryable: false },
+  network: { title: 'Could not reach AI',        detail: 'Check your internet connection and try again.',             retryable: true  },
+};
+
+function ErrorState({ onRetry, kind }: { onRetry: () => void; kind: GeminiError }) {
+  const { title, detail, retryable } = ERROR_MESSAGES[kind];
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 py-2">
       <span className="grid h-11 w-11 place-items-center rounded-2xl bg-nebula-rose/10 ring-1 ring-nebula-rose/30">
         <AlertCircle size={20} className="text-nebula-rose/80" />
       </span>
-      <p className="text-center text-sm text-slate-400">
-        Could not generate insight. Check your connection or API key.
-      </p>
-      <button
-        onClick={onRetry}
-        className="rounded-xl bg-nebula-violet/20 px-4 py-2 text-xs font-semibold text-nebula-violet ring-1 ring-nebula-violet/40 transition-all duration-300 hover:scale-105 hover:bg-nebula-violet/30"
-      >
-        Try again
-      </button>
+      <div className="text-center">
+        <p className="text-sm font-semibold text-slate-300">{title}</p>
+        <p className="mt-1 text-xs text-slate-500">{detail}</p>
+      </div>
+      {retryable && (
+        <button
+          onClick={onRetry}
+          className="rounded-xl bg-nebula-violet/20 px-4 py-2 text-xs font-semibold text-nebula-violet ring-1 ring-nebula-violet/40 transition-all duration-300 hover:scale-105 hover:bg-nebula-violet/30"
+        >
+          Try again
+        </button>
+      )}
     </div>
   );
 }

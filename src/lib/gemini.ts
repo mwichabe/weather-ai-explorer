@@ -6,6 +6,12 @@ const GEMINI_URL =
 
 export const hasGeminiKey = Boolean(GEMINI_API_KEY);
 
+export type GeminiError = 'quota' | 'key' | 'network';
+
+export type GeminiResult =
+  | { ok: true; text: string }
+  | { ok: false; error: GeminiError };
+
 function buildPrompt(
   locationName: string,
   current: CurrentConditions,
@@ -44,13 +50,13 @@ export async function fetchGeminiInsight(
   current: CurrentConditions,
   daily: ForecastDay[],
   signal?: AbortSignal,
-): Promise<string | undefined> {
-  if (!GEMINI_API_KEY) return undefined;
+): Promise<GeminiResult> {
+  if (!GEMINI_API_KEY) return { ok: false, error: 'key' };
 
   const body = {
     contents: [{ parts: [{ text: buildPrompt(locationName, current, daily) }] }],
     generationConfig: {
-      maxOutputTokens: 300,
+      maxOutputTokens: 8192,
       temperature: 0.6,
       thinkingConfig: { thinkingBudget: 0 },
     },
@@ -67,14 +73,19 @@ export async function fetchGeminiInsight(
       signal,
     });
 
-    if (!res.ok) return undefined;
+    if (res.status === 429) return { ok: false, error: 'quota' };
+    if (res.status === 401 || res.status === 403) return { ok: false, error: 'key' };
+    if (!res.ok) return { ok: false, error: 'network' };
 
     const json = (await res.json()) as {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
 
-    return json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? undefined;
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!text) return { ok: false, error: 'network' };
+
+    return { ok: true, text };
   } catch {
-    return undefined;
+    return { ok: false, error: 'network' };
   }
 }
