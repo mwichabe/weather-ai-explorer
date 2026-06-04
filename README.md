@@ -5,7 +5,7 @@ React 18 · Vite · TypeScript · Tailwind CSS · TanStack Query.
 
 ![stack](https://img.shields.io/badge/React-18-58c7f3) ![stack](https://img.shields.io/badge/TypeScript-strict-5d6cfa) ![stack](https://img.shields.io/badge/TanStack_Query-v5-8b7cf6)
 
-## ✨ Features
+## Features
 
 - **Hero panel** — massive current temperature, condition emoji, location, and a glowing **Gemini AI Insight** card fed directly from the API's `ai=true` summaries.
 - **Glassmorphic metric grid** — Feels Like, Humidity, Wind, Visibility, each with contextual hints.
@@ -20,18 +20,18 @@ React 18 · Vite · TypeScript · Tailwind CSS · TanStack Query.
 
 ```bash
 npm install
-cp .env.example .env        # add your wai_ key (or skip for Demo Mode)
+cp .env.example .env
 npm run dev
 ```
 
-| Env var | Purpose |
-| --- | --- |
-| `VITE_WEATHERAI_KEY` | Your `wai_...` API key from Dashboard → API Keys. Empty ⇒ Demo Mode. |
-| `VITE_WEATHERAI_BASE_URL` | Optional override of `https://api.weather-ai.co`. |
+| Env var                   | Purpose                                                              |
+| ------------------------- | -------------------------------------------------------------------- |
+| `VITE_WEATHERAI_KEY`      | Your `wai_...` API key from Dashboard → API Keys. Empty ⇒ Demo Mode. |
+| `VITE_WEATHERAI_BASE_URL` | Optional override of `https://api.weather-ai.co`.                    |
 
 > Vite exposes `VITE_*` variables to the browser bundle. That's fine for a portfolio/demo, but for production you'd proxy WeatherAI calls through a thin backend so the key never ships to clients.
 
-## 🧠 API integration, state & caching
+## API integration, state & caching
 
 **Endpoint used:** `GET /v1/weather?lat&lon&days=7&units=metric&ai=true`
 
@@ -72,15 +72,14 @@ src/
 
 ## 🛠 Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Vite dev server |
-| `npm run build` | Type-check (`tsc -b`) + production build |
-| `npm run preview` | Preview the production build |
+| Command           | Description                              |
+| ----------------- | ---------------------------------------- |
+| `npm run dev`     | Vite dev server                          |
+| `npm run build`   | Type-check (`tsc -b`) + production build |
+| `npm run preview` | Preview the production build             |
 
-## 📝 Notes & assumptions
+## Notes & assumptions
 
 - The docs don't publish the exact `/v1/weather` response JSON, so `normalizeWeather()` is intentionally tolerant (multiple alias keys per field, array or columnar daily data). If your account's payload differs, the only file to touch is `src/lib/api.ts`.
 - Free plan = 1,000 req/mo and 200 AI req/mo. If you want to stretch the AI quota further, flip `ai` to `'false'` in `fetchWeather()` — the insight card will explain the absence gracefully.
 - Geocoding uses Open-Meteo's free endpoint (no key) because WeatherAI's weather routes take coordinates; results are cached for 7 days.
-# weather-ai-explorer
