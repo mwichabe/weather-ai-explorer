@@ -28,6 +28,7 @@ npm run dev
 | ------------------------- | -------------------------------------------------------------------- |
 | `VITE_WEATHERAI_KEY`      | Your `wai_...` API key from Dashboard → API Keys. Empty ⇒ Demo Mode. |
 | `VITE_WEATHERAI_BASE_URL` | Optional override of `https://api.weather-ai.co`.                    |
+| `VITE_GEMINI_API_KEY`     | Your gemini api from `https://aistudio.google.com`.                  |
 
 > Vite exposes `VITE_*` variables to the browser bundle. That's fine for a portfolio/demo, but for production you'd proxy WeatherAI calls through a thin backend so the key never ships to clients.
 
