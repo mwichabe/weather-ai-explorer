@@ -16,7 +16,7 @@ React 18 · Vite · TypeScript · Tailwind CSS · TanStack Query.
 - **Live quota meter** — the footer surfaces `X-RateLimit-Remaining` / `X-RateLimit-Limit` from the most recent response.
 - **Demo Mode** — no key? The app runs on deterministic, coordinate-seeded mock data so the full UI is reviewable instantly.
 
-## 🚀 Getting started
+## Getting started
 
 ```bash
 npm install
