@@ -18,9 +18,7 @@ import { cacheGet, cacheSet } from './cache';
 import { buildMockBundle } from './mockData';
 import type { RateLimitInfo, WeatherBundle, CurrentConditions, ForecastDay } from './types';
 
-const BASE_URL = import.meta.env.DEV
-  ? '/weather-proxy'
-  : (import.meta.env.VITE_WEATHERAI_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? 'https://api.weather-ai.co';
+const BASE_URL = '/weather-proxy';
 const API_KEY = (import.meta.env.VITE_WEATHERAI_KEY as string | undefined)?.trim();
 
 export const hasApiKey = Boolean(API_KEY && API_KEY.startsWith('wai_'));
